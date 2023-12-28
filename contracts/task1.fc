@@ -54,7 +54,7 @@ int get_execution_time() method_id ;; Getter for execution time
 
         slice msg_ref = in_msg~load_ref().begin_parse(); ;; Get Ref's content
 
-        slice response_ref = msg_ref
+        slice response_ref = msg_ref; ;; Use a copy to reponse
 
         var (locked_for, new_seqno) = (msg_ref~load_uint(32), msg_ref~load_uint(32)); ;; Get parameters from Ref
 
