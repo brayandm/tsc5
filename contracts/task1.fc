@@ -18,7 +18,7 @@ int get_execution_time() method_id ;; Getter for execution time
 { 
     slice contract_Store = get_data().begin_parse(); ;; Get the Contract Store
     
-    var (public_key, execution_time, receiver, seqno) = (contract_Store~load_uint(256), contract_Store~load_uint(32), contract_Store~load_msg_addr(), contract_Store~load_uint(32)); ;; Get content from Contract Store
+    var (public_key, execution_time) = (contract_Store~load_uint(256), contract_Store~load_uint(32)); ;; Get content from Contract Store (only two first)
     
     return execution_time;
 } 
