@@ -1,5 +1,70 @@
+{-
+    Task1 Ton challenge
+    Brayan Duran Medina
+-}
+
 #include "imports/stdlib.fc";
 
-() recv_internal(int my_balance, int msg_value, cell in_msg_full, slice in_msg_body) impure {
+int get_seqno() method_id ;; Getter for seqno
+{  
+    slice contract_Store = get_data().begin_parse(); ;; Get the Contract Store
+    
+    var (public_key, execution_time, receiver, seqno) = (contract_Store~load_uint(256), contract_Store~load_uint(32), contract_Store~load_msg_addr(), contract_Store~load_uint(32)); ;; Get content from Contract Store
+    
+    return seqno;    
+}
 
+int get_execution_time() method_id ;; Getter for execution time
+{ 
+    slice contract_Store = get_data().begin_parse(); ;; Get the Contract Store
+    
+    var (public_key, execution_time, receiver, seqno) = (contract_Store~load_uint(256), contract_Store~load_uint(32), contract_Store~load_msg_addr(), contract_Store~load_uint(32)); ;; Get content from Contract Store
+    
+    return execution_time;
+} 
+
+() recv_internal(int my_balance, int msg_value, cell in_msg_full, slice in_msg_body) impure
+{
+
+}
+
+() recv_external(slice in_msg) impure
+{
+
+    int operation_code = in_msg~load_uint(32); ;; Get Operation Code
+
+    slice contract_Store = get_data().begin_parse(); ;; Get the Contract Store
+
+    var (public_key, execution_time, receiver, seqno) = (contract_Store~load_uint(256), contract_Store~load_uint(32), contract_Store~load_msg_addr(), contract_Store~load_uint(32)); ;; Get content from Contract Store
+
+    if(operation_code != 0x9df10277) ;; Checking Operation Code
+    {
+        throw_unless(124, now() > execution_time); ;; Validate Execution Time
+
+        accept_message(); ;; Accept Message if everything is execution time is OK
+
+        cell msg = begin_cell().store_slice(receiver).store_coins(0).store_uint(0, 107).store_uint(0x18, 6).end_cell(); ;; Build the message
+
+        send_raw_message(msg, 128); ;; Send the message
+    }
+    else
+    {
+        var query_id = in_msg~load_bits(64); ;; Get query id
+
+        var signature = in_msg~load_bits(512); ;; Get signature
+
+        slice msg_ref = in_msg~load_ref().begin_parse(); ;; Get Ref's content
+
+        var (locked_for, new_seqno) = (msg_ref~load_uint(32), msg_ref~load_uint(32)); ;; Get parameters from Ref
+
+        throw_unless(119, new_seqno - 1 == seqno); ;; Validate Sequence number
+        throw_unless(120, check_signature(slice_hash(msg_ref), signature, public_key)); ;; Validate Signature
+        throw_unless(121, 0 < locked_for); ;; Validate locked
+        throw_unless(122, now() <= execution_time); ;; Validate Execution Time
+        throw_unless(123, locked_for + now() >= execution_time); ;; Validate locking
+
+        accept_message(); ;; Accept Message if everything is execution time is OK
+
+        set_data(begin_cell().store_uint(public_key, 256).store_uint(locked_for + now(), 32).store_slice(receiver).store_uint(new_seqno, 32).end_cell()); ;; Update Contract Store
+    }
 }
