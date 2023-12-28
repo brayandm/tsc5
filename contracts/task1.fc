@@ -54,10 +54,12 @@ int get_execution_time() method_id ;; Getter for execution time
 
         slice msg_ref = in_msg~load_ref().begin_parse(); ;; Get Ref's content
 
+        slice response_ref = msg_ref
+
         var (locked_for, new_seqno) = (msg_ref~load_uint(32), msg_ref~load_uint(32)); ;; Get parameters from Ref
 
         throw_unless(119, new_seqno - 1 == seqno); ;; Validate Sequence number
-        throw_unless(120, check_signature(slice_hash(msg_ref), signature, public_key)); ;; Validate Signature
+        throw_unless(120, check_signature(slice_hash(response_ref), signature, public_key)); ;; Validate Signature
         throw_unless(121, 0 < locked_for); ;; Validate locked
         throw_unless(122, now() <= execution_time); ;; Validate Execution Time
         throw_unless(123, locked_for + now() >= execution_time); ;; Validate locking
