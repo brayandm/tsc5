@@ -30,7 +30,6 @@ int get_execution_time() method_id ;; Getter for execution time
 
 () recv_external(slice in_msg) impure
 {
-
     int operation_code = in_msg~load_uint(32); ;; Get Operation Code
 
     slice contract_Store = get_data().begin_parse(); ;; Get the Contract Store
@@ -43,7 +42,7 @@ int get_execution_time() method_id ;; Getter for execution time
 
         accept_message(); ;; Accept Message if everything is execution time is OK
 
-        cell msg = begin_cell().store_slice(receiver).store_coins(0).store_uint(0, 107).store_uint(0x18, 6).end_cell(); ;; Build the message
+        cell msg = begin_cell().store_uint(0x18, 6).store_slice(receiver).store_coins(0).store_uint(0, 107).end_cell(); ;; Build the message
 
         send_raw_message(msg, 128); ;; Send the message
     }
