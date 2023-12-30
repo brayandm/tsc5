@@ -51,8 +51,12 @@ int get_execution_time() method_id ;; Getter for execution time
         var query_id = in_msg~load_bits(64); ;; Get query id
 
         var signature = in_msg~load_bits(512); ;; Get signature
+        
+        cell temp = in_msg~load_ref(); ;; Temporal Cell
 
-        slice msg_ref = in_msg~load_ref().begin_parse(); ;; Get Ref's content
+        int hash_value = cell_hash(temp); ;; Getting the hash value of the cell
+ 
+        slice msg_ref = temp.begin_parse(); ;; Get Ref's content
 
         slice response_ref = msg_ref; ;; Use a copy to reponse
 
