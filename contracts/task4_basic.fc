@@ -1,5 +1,145 @@
+{-
+    Task4 Basic Ton challenge
+    Brayan Duran Medina
+-}
+
 #include "imports/stdlib.fc";
 
-() recv_internal(int my_balance, int msg_value, cell in_msg_full, slice in_msg_body) impure {
+() recv_internal(int my_balance, int msg_value, cell in_msg_full, slice in_msg_body) impure
+{
 
+}
+
+(int, int, int, tuple) solve(int n, int m, tuple maze) method_id
+{
+    tuple dist = empty_tuple(); ;; distance matrix
+    tuple cost = empty_tuple(); ;; cost matrix
+    tuple best = empty_tuple(); ;; best option matrix
+    tuple mk = empty_tuple(); ;; mark matrix
+
+    tuple dx = to_tuple([-1, -1, 0, 1, 1, 1, 0, -1]); ;; delta x
+    tuple dy = to_tuple([0, 1, 1, 1, 0, -1, -1, -1]); ;; delta y
+
+    int sx = -1; ;; start x
+    int sy = -1; ;; start y
+
+    int ex = -1; ;; end x
+    int ey = -1; ;; end y
+
+    int i = 0;
+    int j = 0;
+
+    i = 0;
+    repeat(n)
+    {
+        tuple dist_row = empty_tuple();
+        tuple cost_row = empty_tuple();
+        tuple best_row = empty_tuple();
+        tuple mk_row = empty_tuple();
+
+        j = 0;
+        repeat(m)
+        {
+            dist_row~tpush(1000000000); ;; Storing inf
+            best_row~tpush(to_tuple([-1,-1])); ;; Storing nothing
+            mk_row~tpush(0); ;; Storing false
+
+            if(maze.at(i).at(j) == 46) ;; clean path '.'
+            {
+                cost_row~tpush(1);
+            }
+            elseif(maze.at(i).at(j) == 63) ;; obstacle '?'
+            {
+                cost_row~tpush(962);
+            }
+            elseif(maze.at(i).at(j) == 88) ;; obstacle 'X'
+            {
+                cost_row~tpush(1000000000);
+            }
+            elseif(maze.at(i).at(j) == 83) ;; Storing Start 'S'
+            {
+                sx = i;
+                sy = j;
+
+                cost_row~tpush(1);
+            }
+            else ;; Storing End 'E'
+            {
+                ex = i;
+                ey = j;
+
+                cost_row~tpush(1);
+            }
+
+            j += 1;
+        }
+
+        dist~tpush(dist_row);
+        dist~tpush(cost_row);
+        mk~tpush(mk_row);
+
+        i += 1;
+    }
+
+    cast_to_tuple(dist.at(sx)).set_index_var(0, sy);
+
+    repeat(n * m)
+    {
+        int mx = -1;
+        int my = -1;
+        int mv = 1000000000;
+
+        i = 0;
+        repeat(n)
+        {
+            j = 0;
+            repeat(m)
+            {
+                if(mk.at(sx).at(sy) == 0)
+                {
+                    if(dist.at(sx).at(sy) < mv)
+                    {
+                        mx = sx;
+                        my = sy;
+                    }
+                }
+
+                j += 1;
+            }
+            i += 1;
+        }
+
+        cast_to_tuple(mk.at(mx)).set_index_var(1, my);
+
+        i = 0;
+        repeat(8)
+        {
+            int nx = mx + dx.at(i);
+            int ny = my + dy.at(i);
+
+            if(nx >= 0)
+            {
+                if(nx < n)
+                {
+                    if(ny >= 0)
+                    {
+                        if(ny < m)
+                        {
+                            int new_dist = dist.at(mx).at(my) + cost.at(nx).at(ny);
+
+                            if(new_dist < dist.at(nx).at(ny))
+                            {
+                                cast_to_tuple(dist.at(nx)).set_index_var(new_dist, ny);
+                                cast_to_tuple(best.at(nx)).set_index_var(to_tuple([mx, my]), ny);
+                            }
+                        }
+                    }
+                }
+            }
+
+            i += 1;
+        }
+    }
+
+    return (-1, 0, 0, maze);
 }
