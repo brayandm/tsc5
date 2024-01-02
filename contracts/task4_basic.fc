@@ -79,6 +79,7 @@ forall X -> (tuple) to_tuple (X x) asm "NOP";
         }
 
         dist~tpush(dist_row);
+        best~tpush(best_row);
         cost~tpush(cost_row);
         mk~tpush(mk_row);
 
