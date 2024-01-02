@@ -5,6 +5,8 @@
 
 #include "imports/stdlib.fc";
 
+forall X -> tuple set_index_var(tuple t, X value, int position) asm "SETINDEXVAR";
+forall X -> tuple cast_to_tuple (X x) asm "NOP";
 forall X -> (tuple) to_tuple (X x) asm "NOP";
 
 () recv_internal(int my_balance, int msg_value, cell in_msg_full, slice in_msg_body) impure
