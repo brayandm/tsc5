@@ -41,7 +41,7 @@
         repeat(m)
         {
             dist_row~tpush(1000000000); ;; Storing inf
-            best_row~tpush(to_tuple([-1,-1])); ;; Storing nothing
+            best_row~tpush(-1); ;; Storing nothing
             mk_row~tpush(0); ;; Storing false
 
             if(maze.at(i).at(j) == 46) ;; clean path '.'
@@ -75,13 +75,13 @@
         }
 
         dist~tpush(dist_row);
-        dist~tpush(cost_row);
+        cost~tpush(cost_row);
         mk~tpush(mk_row);
 
         i += 1;
     }
 
-    cast_to_tuple(dist.at(sx)).set_index_var(0, sy);
+    dist.set_index_var(cast_to_tuple(dist.at(sx)).set_index_var(0, sy), sx); ;; initial distance
 
     repeat(n * m)
     {
@@ -109,7 +109,7 @@
             i += 1;
         }
 
-        cast_to_tuple(mk.at(mx)).set_index_var(1, my);
+        mk.set_index_var(cast_to_tuple(mk.at(mx)).set_index_var(1, my), mx); ;; marking as visited
 
         i = 0;
         repeat(8)
@@ -125,12 +125,12 @@
                     {
                         if(ny < m)
                         {
-                            int new_dist = dist.at(mx).at(my) + cost.at(nx).at(ny);
+                            int new_dist = dist.at(mx).at(my) + cost.at(nx).at(ny); ;; new distance
 
-                            if(new_dist < dist.at(nx).at(ny))
+                            if(new_dist < dist.at(nx).at(ny)) ;; relaxing distance
                             {
-                                cast_to_tuple(dist.at(nx)).set_index_var(new_dist, ny);
-                                cast_to_tuple(best.at(nx)).set_index_var(to_tuple([mx, my]), ny);
+                                dist.set_index_var(cast_to_tuple(dist.at(nx)).set_index_var(new_dist, ny), nx);
+                                best.set_index_var(cast_to_tuple(best.at(nx)).set_index_var(mx * m + my, ny), nx);
                             }
                         }
                     }
@@ -141,5 +141,25 @@
         }
     }
 
-    return (-1, 0, 0, maze);
+    if(dist.at(ex).at(ey) == 1000000000) ;; checking if there is not path
+    {
+        return (-1, 0, 0, null());   
+    }
+
+    int end = ex * m + ey;
+    int start = sx * m + sy;
+
+    while(end != start) ;; reconstructing path
+    {
+        if(maze.at(end / m).at(end % m) != 69)
+        {
+            maze.set_index_var(cast_to_tuple(maze.at(end / m)).set_index_var(33, end % m), end / m); ;; printing path
+        }
+        
+        end = best.at(end / m).at(end % m); ;; Finding best
+    }
+
+    int distance = dist.at(ex).at(ey);
+
+    return (-1, distance / 962, distance / 962 + distance % 962, maze); ;; returning answer
 }
