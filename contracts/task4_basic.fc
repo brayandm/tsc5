@@ -100,12 +100,12 @@ forall X -> (tuple) to_tuple (X x) asm "NOP";
             j = 0;
             repeat(m)
             {
-                if(mk.at(sx).at(sy) == 0)
+                if(mk.at(i).at(j) == 0)
                 {
-                    if(dist.at(sx).at(sy) < mv)
+                    if(dist.at(i).at(j) < mv)
                     {
-                        mx = sx;
-                        my = sy;
+                        mx = i;
+                        my = j;
                     }
                 }
 
