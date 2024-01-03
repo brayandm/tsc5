@@ -86,9 +86,9 @@ forall X -> (tuple) to_tuple (X x) asm "NOP";
         i += 1;
     }
 
-    return (-1, 0, 0, null());
-
     dist.set_index_var(cast_to_tuple(dist.at(sx)).set_index_var(0, sy), sx); ;; initial distance
+
+    return (-1, 0, 0, null());
 
     repeat(n * m)
     {
