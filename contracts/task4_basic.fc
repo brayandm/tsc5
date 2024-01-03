@@ -147,10 +147,11 @@ forall X -> (tuple) to_tuple (X x) asm "NOP";
         }
     }
 
-    if(dist.at(ex).at(ey) == 1000000000) ;; checking if there is not path
+    if(dist.at(ex).at(ey) != 1000000000) ;; checking if there is not path
     {
         return (-1, 0, 0, null());
     }
+    return (1, 0, 0, null());
 
     int end = ex * m + ey;
     int start = sx * m + sy;
