@@ -106,6 +106,7 @@ forall X -> (tuple) to_tuple (X x) asm "NOP";
                     {
                         mx = i;
                         my = j;
+                        mv = dist.at(i).at(j);
                     }
                 }
 
