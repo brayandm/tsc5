@@ -88,8 +88,6 @@ forall X -> (tuple) to_tuple (X x) asm "NOP";
 
     dist.set_index_var(cast_to_tuple(dist.at(sx)).set_index_var(0, sy), sx); ;; initial distance
 
-    return (-1, 0, 0, null());
-
     repeat(n * m)
     {
         int mx = -1;
@@ -104,7 +102,7 @@ forall X -> (tuple) to_tuple (X x) asm "NOP";
             {
                 if(mk.at(i).at(j) == 0)
                 {
-                    if(dist.at(i).at(j) < mv)
+                    if(dist.at(i).at(j) <= mv)
                     {
                         mx = i;
                         my = j;
