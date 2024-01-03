@@ -133,7 +133,7 @@ forall X -> (tuple) to_tuple (X x) asm "NOP";
                         {
                             int new_dist = dist.at(mx).at(my) + cost.at(nx).at(ny); ;; new distance
 
-                            if(new_dist < dist.at(nx).at(ny)) ;; relaxing distance
+                            if(new_dist <= dist.at(nx).at(ny)) ;; relaxing distance
                             {
                                 dist.set_index_var(cast_to_tuple(dist.at(nx)).set_index_var(new_dist, ny), nx);
                                 best.set_index_var(cast_to_tuple(best.at(nx)).set_index_var(mx * m + my, ny), nx);
