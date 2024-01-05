@@ -162,5 +162,5 @@ forall X -> (tuple) to_tuple (X x) asm "NOP";
 
     int distance = dist.at(ex).at(ey);
 
-    return (distance / 924483, distance % 924483 / 962, distance / 924483 + distance % 924483 / 962 + distance % 962, maze); ;; returning answer
+    return (distance / 924483, distance % 924483 / 962, distance / 924483 + distance % 924483 / 962 + distance % 924483 % 962, maze); ;; returning answer
 }
