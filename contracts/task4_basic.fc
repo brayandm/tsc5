@@ -86,7 +86,7 @@ forall X -> (tuple) to_tuple (X x) asm "NOP";
         i += 1;
     }
 
-    dist.set_index_var(cast_to_tuple(dist.at(sx)).set_index_var(0, sy), sx); ;; initial distance
+    dist = dist.set_index_var(cast_to_tuple(dist.at(sx)).set_index_var(0, sy), sx); ;; initial distance
 
     repeat(n * m)
     {
@@ -115,7 +115,7 @@ forall X -> (tuple) to_tuple (X x) asm "NOP";
             i += 1;
         }
 
-        mk.set_index_var(cast_to_tuple(mk.at(mx)).set_index_var(1, my), mx); ;; marking as visited
+        mk = mk.set_index_var(cast_to_tuple(mk.at(mx)).set_index_var(1, my), mx); ;; marking as visited
 
         i = 0;
         repeat(8)
@@ -135,8 +135,8 @@ forall X -> (tuple) to_tuple (X x) asm "NOP";
 
                             if(new_dist <= dist.at(nx).at(ny)) ;; relaxing distance
                             {
-                                dist.set_index_var(cast_to_tuple(dist.at(nx)).set_index_var(new_dist, ny), nx);
-                                best.set_index_var(cast_to_tuple(best.at(nx)).set_index_var(mx * m + my, ny), nx);
+                                dist = dist.set_index_var(cast_to_tuple(dist.at(nx)).set_index_var(new_dist, ny), nx);
+                                best = best.set_index_var(cast_to_tuple(best.at(nx)).set_index_var(mx * m + my, ny), nx);
                             }
                         }
                     }
@@ -159,7 +159,7 @@ forall X -> (tuple) to_tuple (X x) asm "NOP";
     {
         if(maze.at(end / m).at(end % m) != 69)
         {
-            maze.set_index_var(cast_to_tuple(maze.at(end / m)).set_index_var(33, end % m), end / m); ;; printing path
+            maze = maze.set_index_var(cast_to_tuple(maze.at(end / m)).set_index_var(33, end % m), end / m); ;; printing path
         }
         
         end = best.at(end / m).at(end % m); ;; Finding best
