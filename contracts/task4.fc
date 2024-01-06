@@ -147,17 +147,20 @@ forall X -> (tuple) to_tuple (X x) asm "NOP";
         }
     }
 
-    int end = ex * m + ey;
     int start = sx * m + sy;
+    int end = ex * m + ey;
 
-    while(end != start) ;; reconstructing path
+    while(start != end) ;; reconstructing path
     {
-        if(maze.at(end / m).at(end % m) != 69)
+        int endx = end / m; ;; Finding x
+        int endy = end % m; ;; Finding y
+
+        if(maze.at(endx).at(endy) != 69)
         {
-            maze = maze.set_index_var(cast_to_tuple(maze.at(end / m)).set_index_var(33, end % m), end / m); ;; printing path
+            maze = maze.set_index_var(cast_to_tuple(maze.at(endx)).set_index_var(33, endy), endx); ;; printing path
         }
         
-        end = best.at(end / m).at(end % m); ;; Finding best
+        end = best.at(endx).at(endy); ;; Finding best
     }
 
     int distance = dist.at(ex).at(ey);
