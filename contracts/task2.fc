@@ -1,5 +1,136 @@
 #include "imports/stdlib.fc";
 
-() recv_internal(int my_balance, int msg_value, cell in_msg_full, slice in_msg_body) impure {
+{-
+    Task2 Ton challenge
+    Brayan Duran Medina
+-}
 
+cell get_users() method_id ;; Get the users list
+{
+    slice contract_Store = get_data().begin_parse(); ;; Get the Contract Store
+
+    var (admin_address, users) = (contract_Store~load_msg_addr(), contract_Store~load_dict()); ;; Get the admin address and the users list
+
+    return users;
+}
+
+int get_user_share(slice user_address) method_id
+{
+    slice contract_Store = get_data().begin_parse(); ;; Get the Contract Store
+
+    var (admin_address, users) = (contract_Store~load_msg_addr(), contract_Store~load_dict()); ;; Get the admin address and the users list
+
+    user_address~skip_bits(11); ;; Skip the first 11 bits
+
+    (slice user_share, int x) = users.udict_get?(256, user_address~load_uint(256)); ;; Get the user share
+
+    return user_share~load_uint(32);
+}
+
+() recv_internal(int my_balance, int msg_value, cell in_msg_full, slice in_msg_body) impure 
+{
+    var in_msg_full_parsed = in_msg_full.begin_parse(); ;; Parse the message
+
+    in_msg_full_parsed~skip_bits(4); ;; Skip the first 4 bits
+
+    slice msg_address = in_msg_full_parsed~load_msg_addr(); ;; Get the message address
+
+    slice contract_Store = get_data().begin_parse(); ;; Get the Contract Store
+
+    var (admin_address, users) = (contract_Store~load_msg_addr(), contract_Store~load_dict()); ;; Get the admin address and the users list
+
+    int operation_code = in_msg_body~load_uint(32); ;; Get the operation code
+
+    if(operation_code == 0x368ddef3) ;; Add User
+    {
+        var (query_id, address, share) = (in_msg_body~load_uint(64), in_msg_body~load_msg_addr(), in_msg_body~load_uint(32));
+
+        throw_unless(120, equal_slices(msg_address, admin_address)); ;; Check if the message address is the admin address
+
+        address~skip_bits(11); ;; Skip the first 11 bits
+
+        cell share = begin_cell().store_uint(32, share).end_cell(); ;; Store the share
+
+        set_data(begin_cell().store_slice(admin_address).store_dict(users.udict_set(256, address~load_uint(256), share.begin_parse())).end_cell()); ;; Update the users list
+    }
+    elseif(operation_code == 0x278205c8) ;; Remove User
+    {
+        var (query_id, address) = (in_msg_body~load_uint(64), in_msg_body~load_msg_addr());
+
+        throw_unless(120, equal_slices(msg_address, admin_address)); ;; Check if the message address is the admin address
+
+        address~skip_bits(11); ;; Skip the first 11 bits
+
+        var (share, x) = users.udict_get?(256, address~load_uint(256)); ;; Get the user share
+
+        throw_unless(121, x); ;; Check if the user exists
+
+        users~udict_delete?(256, address~load_uint(256)); ;; Delete the user
+
+        set_data(begin_cell().store_slice(admin_address).store_dict(users).end_cell()); ;; Update the users list
+    }   
+    elseif(operation_code == 0x68530b3) ;; Split (TON)
+    {
+        throw_if(122, users.dict_empty?()); ;; Check if the users list is empty
+
+        int total_share = 0; ;; Total share
+
+        var (address, share, x) = users.udict_get_min?(256); ;; Get the first user
+
+        while(x)
+        {
+            total_share += share~load_uint(32); ;; Add the share to the total share
+
+            (address, share, x) = users.udict_get_next?(256, address); ;; Get the next user
+        }
+
+        (address, share, x) = users.udict_get_min?(256); ;; Get the first user
+
+        while(x)
+        {
+            cell message = begin_cell()
+                            .store_uint(0x18, 6)
+                            .store_uint(0x400, 11).store_uint(address, 256) ;; Set the destination address
+                            .store_coins(share~load_uint(32) * msg_value / total_share) ;; Set the amount of coins
+                            .store_uint(0, 107).end_cell(); ;; Create the message
+        
+            send_raw_message(message, 1); ;; Send the message
+
+            (address, share, x) = users.udict_get_next?(256, address); ;; Get the next user
+        }
+    }
+    elseif(operation_code == 0x7362d09c) ;; Transfer Notification (Jetton)
+    {
+        throw_unless(122, users.dict_empty?()); ;; Check if the users list is empty
+
+        var (query_id, amount) = (in_msg_body~load_uint(64), in_msg_body~load_coins());
+
+        int total_share = 0; ;; Total share
+
+        var (address, share, x) = users.udict_get_min?(256); ;; Get the first user
+
+        while(x)
+        {
+            total_share += share~load_uint(32); ;; Add the share to the total share
+
+            (address, share, x) = users.udict_get_next?(256, address); ;; Get the next user
+        }
+
+        while(x)
+        {
+            cell message = begin_cell().store_uint(0x18, 6).store_slice(msg_address)  ;; Set the destination address
+                            .store_coins(20000000).store_uint(1, 107) ;; Set the amount of coins
+                            .store_ref(begin_cell() 
+                                    .store_uint(0x0f8a7ea5, 32) .store_uint(0, 64)  ;; Set the operation code
+                                    .store_coins(share~load_uint(32) * msg_value / total_share) ;; Set the amount of coins
+                                    .store_uint(0x400, 11).store_uint(address, 256) ;; Set the destination address
+                                    .store_uint(0x400, 11).store_uint(address, 256) ;; Set the destination address
+                                    .store_uint(0, 1).store_coins(1).store_uint(0, 1) ;; Set the amount of coins
+                                .end_cell()).end_cell(); ;; Create the message
+        
+            send_raw_message(message, 1); ;; Send the message
+
+            (address, share, x) = users.udict_get_next?(256, address); ;; Get the next user
+        }
+    }
 }
